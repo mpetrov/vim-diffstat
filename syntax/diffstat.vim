@@ -1,5 +1,5 @@
 if exists("b:diffstat_syntax")
-  finish
+  "finish
 endif
 
 syntax match diffstatComment "\v(#.*$)|(\|)"

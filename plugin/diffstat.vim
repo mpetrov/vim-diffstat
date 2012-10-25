@@ -28,7 +28,7 @@ endfunction
 function DiffStatCallSystem(commit)
   " TODO(mpetrov): consider using diff-tree or --numstat
   let command = g:DiffStatGitCommand . " diff " . a:commit 
-  let text = system(command . " --stat=200")
+  let text = system(command . " --stat=140,100,100")
   let heading = "# " . command . "\n"
   return heading . text . "\n"
 endfunction
@@ -57,6 +57,7 @@ function! s:DiffStat(...)
     call append(line('$') - 1, split(DiffStatCallSystem(commit), '\v\n'))
   endfor
   setlocal readonly nomodifiable
+  normal! gg
 endfunction
 command! -nargs=* -bar DiffStat call s:DiffStat(<f-args>)
 
