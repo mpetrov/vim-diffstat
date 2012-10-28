@@ -22,24 +22,24 @@ instructions on how to use and configure the plugin.
 ## Usage
 
 This plugin can be invoked using the `:DiffStat` command. When inside a repo,
-run `:DiffStat [commits..]` to open the DiffStat window.
+run `:DiffStat [commits..]` to open the DiffStat window. See
+`:help DiffStat-usage` for more details.
 
 An example of this would be `:DiffStat HEAD~1` to view a diff against the
 parent of the current tip.
 
-See `:help DiffStat-usage` for more details.
 
 ## Mapping
 
 One can easily remap `<leader>d`, for example, to view the last couple commit
-points as follows:
-
+points by adding the following to you `.vimrc`:
 `noremap <leader>d :DiffStat HEAD HEAD..HEAD~1 HEAD~1..HEAD~2<cr>`
 
 ## Screenshots 
 
+
+Using `:DiffStat HEAD HEAD~1` on the OpenJDK7 source:
 ![DiffStat Screenshot](https://raw.github.com/wiki/mpetrov/vim-diffstat/diffstat.png)
 
-Using `:DiffStat HEAD HEAD~1` on the OpenJDK7 source.
 
 
