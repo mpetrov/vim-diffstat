@@ -66,6 +66,7 @@ function! s:DisplayWindow(show)
 
   if !hasmapto("DiffStatOpenFile", "\n")
     nnoremap  <script> <buffer> <silent> <cr> :call <SID>DiffStatOpenFile()<cr>
+    nnoremap  <script> <buffer> <silent> gf :call <SID>DiffStatOpenFile()<cr>
   endif
 
 endfunction
@@ -173,7 +174,7 @@ function! diffstat#run(...)
         \ g:diff_stat_git_command . " rev-parse --show-toplevel"), "\n")[0]
   if v:shell_error 
     call s:DisplayWindow(0)
-    echohl WarningMsg
+    echohl ErrorMsg
     echomsg "DiffStat can only be run in a .git repo"
     echohl None
     return 0

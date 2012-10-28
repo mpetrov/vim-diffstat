@@ -1,30 +1,31 @@
-*diffstat.txt* A `git diff --stat` optimized for Vim.
+*DiffStat.txt* A `git diff --stat` optimized for Vim.
 
 Author:   Martin Petrov <martin@martinpetrov.com>
 Licence:  Vim licence, see |license|
+Version:  0.0.1
 
 ==============================================================================
-DiffStat                                    *diffstat*
+DiffStat                                    *DiffStat*
 
-1. Introduction                             |diffstat-intro|
-2. DiffStat Usage                           |diffstat-usage|
-3. DiffStat Options                         |diffstat-options|
+1. Introduction                             |DiffStat-intro|
+2. DiffStat Usage                           |DiffStat-usage|
+3. DiffStat Options                         |DiffStat-options|
 
 ==============================================================================
-1. Introduction                             *diffstat-intro*
+1. Introduction                             *DiffStat-intro*
 
-DiffStat is a plugin which allows you to run `git diff --stat` in a Vim window.
-Hitting <cr> (Enter) when the cursor is on a file name opens that file for
-editing.
+DiffStat is a plugin that runs `git diff --stat` in a new Vim window. It allows
+for easy file navigation, by jumping to the file under the cursor when Enter is
+pressed.
 
 The standard command line returns paths relative to the git toplevel directory,
-and simplifies paths. This plugin aims to preserve simplified paths in an 80
-character terminal, but make them relative, and easy to follow. In addition, it
-supports syntax highlighting to make the result easier to read.
+not the working directory.  It also simplifies paths, which breaks jumping by
+file names. This plugin aims to correct those two problems, while displaying the
+output in a syntax-highlighted 80-character window.
 
 ==============================================================================
-2. DiffStat usage                           *diffstat-usage*
-                                            *diffstat-:DiffStat*
+2. DiffStat usage                           *DiffStat-usage*
+                                            *DiffStat-:DiffStat*
 
 This plugin can be invoked using the :DiffStat command. When inside a repo, run
 :DiffStat [commits..] to open the DiffStat window.
@@ -42,7 +43,7 @@ Running DiffStat in a git repo will open a window containing the diff[s].
 Hitting <cr> in normal mode opens the file under the cursor.
 
 ==============================================================================
-3. DiffStat Options                        *diffstat-options*
+3. DiffStat Options                        *DiffStat-options*
 
 DiffStat is configured via several global variables that you can set in your
 |vimrc| file according to your needs. Below is a comprehensive list of
