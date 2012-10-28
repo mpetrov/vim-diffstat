@@ -8,10 +8,6 @@ if !exists('g:diff_stat_git_command')
   let g:diff_stat_git_command = 'git'
 endif
 
-if !exists('g:diff_stat_secondary_git_command')
-  let g:diff_stat_git_secondary_command = 'git'
-endif
-
 if !exists('g:diff_stat_path_simplifications')
   " These are useful for Guava, but probably not much else. Change them to suit
   " your needs if you have very long paths.

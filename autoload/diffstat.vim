@@ -8,11 +8,12 @@ if exists('g:loaded_diffstat')
   finish
 endif
 
+let s:GIT_ERROR = "GIT ERROR"
 
 " Maps visible file names to actual system paths.
 let s:diff_files_list = {}
 
-function! g:DiffStatOpenFile()
+function! s:DiffStatOpenFile()
   let l:name = s:DiffStatFileNameForLine('.')
   if strlen(l:name)
     execute "wincmd w"
@@ -33,36 +34,39 @@ function! s:DisplayWindow(show)
 
   if l:nr < 0
     split __diffstat__
+    setlocal filetype=diffstat
+    setlocal bufhidden=delete
+    setlocal buftype=nofile
+    setlocal foldcolumn=0
+    setlocal nobuflisted
+    setlocal nofoldenable
+    setlocal nolist
+    setlocal nonumber
+    setlocal nospell
+    setlocal noswapfile
+    setlocal nowrap
+    setlocal statusline=DiffStat
+    setlocal textwidth=0
+    setlocal winfixwidth
+    if exists('+colorcolumn')
+      setlocal colorcolumn=
+    endif
+    if exists('+relativenumber')
+      setlocal norelativenumber
+    endif
   else
     execute l:nr . " wincmd w"
   endif
+
   setlocal noreadonly modifiable
   normal! gg"_dGA
-  setlocal filetype=diffstat
-  setlocal bufhidden=hide
-  setlocal buftype=nofile
-  setlocal foldcolumn=0
-  setlocal nobuflisted
-  setlocal nofoldenable
-  setlocal nolist
-  setlocal nonumber
-  setlocal nospell
-  setlocal noswapfile
-  setlocal nowrap
-  setlocal statusline=DiffStat
-  setlocal textwidth=0
-  setlocal winfixwidth
-  if exists('+colorcolumn')
-    setlocal colorcolumn=
-  endif
-  if exists('+relativenumber')
-    setlocal norelativenumber
-  endif
 
   setlocal foldmethod=expr
   setlocal foldexpr=s:DiffStatFold(v:lnum)
 
-  nnoremap  <script> <buffer> <silent> <cr> :call g:DiffStatOpenFile()<cr>
+  if !hasmapto("DiffStatOpenFile", "\n")
+    nnoremap  <script> <buffer> <silent> <cr> :call <SID>DiffStatOpenFile()<cr>
+  endif
 
 endfunction
 
@@ -83,6 +87,9 @@ function! s:DiffStatCommand(command)
 
   let l:command_result =
         \ system(g:diff_stat_git_command . " diff " . a:command . " --numstat")
+  if v:shell_error
+    throw s:GIT_ERROR
+  endif
 
   let files_list = {}
   let l:max_deltas = 0
@@ -133,10 +140,15 @@ function! s:GetTotalsString(files_list)
       let l:deletes_total += value['deletes']
     endif
   endfor
-  return printf("%d files changed, %d insertions(+), %d deletions",
-    \ len(a:files_list), l:inserts_total, l:deletes_total)
+  return printf("%s changed, %s(+), %s(-)",
+    \ s:FormatCountString('file', len(a:files_list)),
+    \ s:FormatCountString('insertion', l:inserts_total),
+    \ s:FormatCountString('deletion', l:deletes_total))
 endfunction
 
+function! s:FormatCountString(str, count)
+  return a:count . " " . a:str . (a:count == 1 ? "" : "s")
+endfunction
 
 let s:DiffStatRegex = '\v^\s*(\S+)\s*\|\s*\d+\s*[+-]+\s*$'
 function! s:DiffStatFileNameForLine(lnum)
@@ -159,12 +171,12 @@ endfunction
 function! diffstat#run(...)
   let s:toplevel = split(system(
         \ g:diff_stat_git_command . " rev-parse --show-toplevel"), "\n")[0]
-  if s:toplevel =~# '\v^\s*$' || !isdirectory(s:toplevel)
+  if v:shell_error 
     call s:DisplayWindow(0)
     echohl WarningMsg
     echomsg "DiffStat can only be run in a .git repo"
     echohl None
-    return
+    return 0
   endif
   call s:DisplayWindow(1)
   let s:diff_files_list = {}
@@ -177,8 +189,16 @@ function! diffstat#run(...)
     if !empty(l:lines)
       call add(l:lines, "")
     endif
-    call add(l:lines, "#" . g:diff_stat_git_command . " diff " . l:commit)
-    let l:files_list = s:DiffStatCommand(l:commit)
+    call add(l:lines, "# " . g:diff_stat_git_command . " diff " . l:commit)
+    try 
+      let l:files_list = s:DiffStatCommand(l:commit)
+    catch 
+      call s:DisplayWindow(0)
+      echohl ErrorMsg
+      echomsg "Unknown revision or path " . l:commit . " in working tree."
+      echohl None
+      return 0
+    endtry
     for [key, value] in items(l:files_list)
       call add(l:lines, value['string'])
     endfor
@@ -189,5 +209,7 @@ function! diffstat#run(...)
   call setpos(1, 1)
   setlocal readonly nomodifiable
   setlocal statusline="DiffStat " . join(a:000, ' ')
+  return 1
 endfunction
 
+let g:loaded_diffstat = 1

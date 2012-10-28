@@ -56,7 +56,7 @@ Use an alternate git command.
 
     let g:diff_stat_git_command = '/usr/local/bin/git1.8.0'
 
-Path simplifications.                     *g:diff_stat_path_simplifications*
+Path simplifications.                      *g:diff_stat_path_simplifications*
 
 Define custom path simplifications for use in longer file paths. The keys in
 this dictionary are path patters, and the values are replacements. This can be
