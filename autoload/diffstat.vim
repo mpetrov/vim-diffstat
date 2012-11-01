@@ -12,14 +12,39 @@ let s:GIT_ERROR = "GIT ERROR"
 
 " Maps visible file names to actual system paths.
 let s:diff_files_list = {}
+let s:diff_commits_list = {}
 
-function! s:DiffStatOpenFile()
-  let l:name = s:DiffStatFileNameForLine('.')
-  if strlen(l:name)
+function! s:DiffStatOpenFile(fugitive_command)
+  let l:file_name = get(s:diff_files_list, line('.'), '')
+  let l:commit = get(s:diff_commits_list, line('.'), '')
+  if strlen(l:file_name)
+    if strlen(a:fugitive_command)
+      if exists(':' . a:fugitive_command) < 1
+          echohl ErrorMsg
+          echomsg "Couldn't find :" . a:fugitive_command . 
+                \ " command. This requires fugitive, make sure it's installed!"
+          echohl None
+          return 0
+      endif
+      call system(g:diff_stat_git_command .
+            \ " rev-parse " . l:commit .":" . l:file_name)
+      if v:shell_error
+        echohl ErrorMsg
+        echomsg l:file_name . " does not exist in " . l:commit
+        echohl None
+        return 0
+      endif
+    endif
     execute "wincmd w"
-    execute "edit " . s:diff_files_list[l:name]
-  end
+    execute "edit " . l:file_name
+    if strlen(a:fugitive_command)
+      silent execute  a:fugitive_command . " " . l:commit . ":" . l:file_name
+    endif
+  endif
 endfunction
+
+
+
 
 " Displays the DiffStat window if show is true, otherwise hide it.
 function! s:DisplayWindow(show)
@@ -65,8 +90,14 @@ function! s:DisplayWindow(show)
   setlocal foldexpr=s:DiffStatFold(v:lnum)
 
   if !hasmapto("DiffStatOpenFile", "\n")
-    nnoremap  <script> <buffer> <silent> <cr> :call <SID>DiffStatOpenFile()<cr>
-    nnoremap  <script> <buffer> <silent> gf :call <SID>DiffStatOpenFile()<cr>
+    nnoremap  <script> <buffer> <silent> <cr> :call <SID>DiffStatOpenFile('')<cr>
+    nnoremap  <script> <buffer> <silent> D :call <SID>DiffStatOpenFile('Gdiff')<cr>
+    nnoremap  <script> <buffer> <silent> dd :call <SID>DiffStatOpenFile('Gdiff')<cr>
+    nnoremap  <script> <buffer> <silent> dh :call <SID>DiffStatOpenFile('Gsdiff')<cr>
+    nnoremap  <script> <buffer> <silent> ds :call <SID>DiffStatOpenFile('Gsdiff')<cr>
+    nnoremap  <script> <buffer> <silent> dv :call <SID>DiffStatOpenFile('Gvdiff')<cr>
+    nnoremap  <script> <buffer> <silent> e :call <SID>DiffStatOpenFile('Gedit')<cr>
+    nnoremap  <script> <buffer> <silent> gf :call <SID>DiffStatOpenFile('')<cr>
   endif
 
 endfunction
@@ -104,7 +135,6 @@ function! s:DiffStatCommand(command)
       let files_list[display_path_name] =
             \ {'inserts': inserts, 'deletes': deletes, 'name': relative_path}
       let l:max_deltas = max([l:max_deltas, inserts + deletes])
-      let s:diff_files_list[display_path_name] = relative_path
     endif
   endfor
 
@@ -151,14 +181,6 @@ function! s:FormatCountString(str, count)
   return a:count . " " . a:str . (a:count == 1 ? "" : "s")
 endfunction
 
-let s:DiffStatRegex = '\v^\s*(\S+)\s*\|\s*\d+\s*[+-]+\s*$'
-function! s:DiffStatFileNameForLine(lnum)
-  if getline(a:lnum) =~? s:DiffStatRegex
-    return matchlist(getline(a:lnum), s:DiffStatRegex)[1]
-  endif
-  return ''
-endfunction
-
 function! s:DiffStatFold(lnum)
   if getline(a:lnum) =~? '\v^\s*$'
     return '0'
@@ -181,6 +203,7 @@ function! diffstat#run(...)
   endif
   call s:DisplayWindow(1)
   let s:diff_files_list = {}
+  let s:diff_commits_list = {}
   let l:commits = a:000
   if empty(l:commits)
     let l:commits = ['HEAD']
@@ -202,6 +225,8 @@ function! diffstat#run(...)
     endtry
     for [key, value] in items(l:files_list)
       call add(l:lines, value['string'])
+      let s:diff_files_list[len(l:lines)] = value['name']
+      let s:diff_commits_list[len(l:lines)] = l:commit
     endfor
     call add(l:lines, s:GetTotalsString(l:files_list))
   endfor

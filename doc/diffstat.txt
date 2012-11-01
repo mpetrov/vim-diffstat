@@ -2,7 +2,7 @@
 
 Author:   Martin Petrov <martin@martinpetrov.com>
 Licence:  Vim licence, see |license|
-Version:  0.0.1
+Version:  0.1.0
 
 ==============================================================================
 DiffStat                                    *DiffStat*
@@ -40,7 +40,12 @@ This plugin can be invoked using the :DiffStat command. When inside a repo, run
                                       and grandparent.
 
 Running DiffStat in a git repo will open a window containing the diff[s].
-Hitting <cr> in normal mode opens the file under the cursor.
+
+The following normal mode commands are supported:
+
+  <cr> Opens the file under the cursor.
+  D    Opens a diff of the file under the cursor at a particular revision.
+  e    Opens a the file under the cursor at a particular revision.
 
 ==============================================================================
 3. DiffStat Options                        *DiffStat-options*
