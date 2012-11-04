@@ -44,8 +44,6 @@ function! s:DiffStatOpenFile(fugitive_command)
 endfunction
 
 
-
-
 " Displays the DiffStat window if show is true, otherwise hide it.
 function! s:DisplayWindow(show)
   let l:nr = bufwinnr("__diffstat__")
@@ -102,7 +100,7 @@ function! s:DisplayWindow(show)
 
 endfunction
 
-function! s:DiffStatShortenPath(path, max_path_length)
+function! s:ShortenPath(path, max_path_length)
   let l:path = a:path
   for [l:pattern, l:replacement] in items(g:diff_stat_path_simplifications)
     let l:path = substitute(l:path, l:pattern, l:replacement, '')
@@ -131,7 +129,7 @@ function! s:DiffStatCommand(command)
     if inserts !=# '0' || deletes !=# '0'
       let absolute_path =  s:toplevel . '/' . name
       let relative_path = fnamemodify(absolute_path, ':.')
-      let display_path_name = s:DiffStatShortenPath(relative_path, max_path_length)
+      let display_path_name = s:ShortenPath(relative_path, max_path_length)
       let files_list[display_path_name] =
             \ {'inserts': inserts, 'deletes': deletes, 'name': relative_path}
       let l:max_deltas = max([l:max_deltas, inserts + deletes])
@@ -231,6 +229,7 @@ function! diffstat#run(...)
     call add(l:lines, s:GetTotalsString(l:files_list))
   endfor
   call append(0, l:lines)
+  execute "resize " . min([len(l:lines), 15])
   normal! G"_ddgg
   call setpos(1, 1)
   setlocal readonly nomodifiable
